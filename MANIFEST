@@ -1,0 +1,8 @@
+MANIFEST
+README
+LICENSE
+Changes
+Makefile.PL
+lib/WWW/HostipInfo.pm
+t/01-use.t
+META.yml                                 Module meta-data (added by MakeMaker)
