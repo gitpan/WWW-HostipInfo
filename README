@@ -1,82 +1,15 @@
-NAME
-    WWW::HostipInfo - get a country and city information from ip address.
+pod2text WWW::HostipInfo.pm > README
 
-SYNOPSIS
-     use WWW::HostipInfo;
+If this is still here it means the programmer was too lazy to create the readme file.
 
-     my $hostip = new WWW::HostipInfo;
-     my $ip     = 'xxx.xxx.xxx.xxx';
-     my $info   = $hostip->get_info($ip);
- 
-     my $country_code = $info->code;
-     my $city_name    = $info->city;
-     my $region       = $info->region; # if any
- 
-     $info = $hostip->recent_info->country_name; # fetch most recent data
- 
-     print WWW::HostipInfo->new($ip)->get_info->city; # shortcut
+You can create it now by using the command shown above from this directory.
 
-DESCRIPTION
-    This module gets a country and city information via hostip.info.
+At the very least you should be able to use this set of instructions
+to install the module...
 
-INSTALL
-     At the very least you should be able to use this set of instructions
-     to install the module...
+perl Makefile.PL
+make
+make test
+make install
 
-     perl Makefile.PL
-     make
-     make test
-     make install
-
-METHODS
-    new returns a WWW::HostipInfo object. This method can take ip address
-        optionally.
-
-    ip  setter / getter to ip address.
-
-    get_info
-        returns a WWW::HostipInfo::Info object. If the method can't get a
-        information, will return "undef".
-
-    recent_info
-        returns a WWW::HostipInfo::Info object.
-
-WWW::HostipInfo::Info
-    With "get_info()", WWW::HostipInfo object returns WWW::HostipInfo::Info
-    object.
-
-  METHODS
-    getters for informations.
-
-    country_code
-        return the cuntry code.
-
-    code
-        an alias to country_code
-
-    country_name
-        return the cuntry name.
-
-    name
-        an alias to country_name
-
-    city
-        return the city name as long as it is not unknown.
-
-    region
-        return state code if the coutnry is US.
-
-    latitude
-    longitude
-
-SEE ALSO
-    <http://www.hostip.info/>
-
-AUTHOR
-    Makamaka Hannyaharamitu, <makamaka[at]cpan.org>
-
-COPYRIGHT AND LICENSE
-    Copyright 2005 by Makamaka Hannyaharamitu
-
-    This library is licensed under GNU GENERAL PUBLIC LICENSE
-
+If you are on a windows box you should use 'nmake' rather than 'make'.

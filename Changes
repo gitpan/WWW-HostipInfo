@@ -1,6 +1,10 @@
 Revision history for Perl module WWW::HostipInfo
 
-0.01 Wed Oct 12 10:28:06 2005
-    - original version; created by ExtUtils::ModuleMaker 0.43
+0.08 Sun Oct 16 17:07:23 2005
+    - added guess() function for unknown cities.
+    - now don't use API when the ip address is private.
+    - added country accessor (an alias to contry_name) into Info class.
 
+0.05 Wed Oct 12 10:28:06 2005
+    - released version; created by ExtUtils::ModuleMaker 0.43
 
