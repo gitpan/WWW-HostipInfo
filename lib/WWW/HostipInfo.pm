@@ -4,44 +4,59 @@ package WWW::HostipInfo;
 use strict;
 use LWP::UserAgent;
 use Carp;
-use vars qw($VERSION $DEBUG);
+use vars qw( $VERSION $DEBUG );
 
-$VERSION = 0.08;
+$VERSION = 0.10;
 
-my $GetAPI   = 'http://www.hostip.info/api/get.html?position=true&ip=';
-my $RoughAPI = 'http://www.hostip.info/api/rough.html?position=true&ip=';
+my $GetAPI   = 'http://api.hostip.info/get_html.php?position=true&ip=';
+my $RoughAPI = 'http://api.hostip.info/get_html.php?position=true&ip=';
 
 
 ## PUBLIC METHOD
 
 sub new {
-	my $class = shift;
-	my $ip    = shift;
-	my $self  = {};
+    my ( $class, $ip ) = @_;
+    my $opts =   ! defined $ip        ? {} 
+               : ref( $ip ) eq 'HASH' ? $ip
+               : { ip => $ip }
+    ;
 
-	bless $self, $class;
-	$self->_init();
-	$self->ip($ip) if(defined $ip);
-	$self;
+    my $self  = {
+        url => $GetAPI,
+        %$opts,
+    };
+
+    bless $self, $class;
+
+    $self->_init() unless ( $self->ua );
+    $self;
 }
 
 
 sub _init {
 	my $self = shift;
-	$self->{_ua} = LWP::UserAgent->new(agent => "WWW::HostipInfo/$VERSION");
+	$self->ua( LWP::UserAgent->new(agent => "WWW::HostipInfo/$VERSION") );
 }
 
 
-sub ua { $_[0]->{_ua} }
-
-
-sub recent_info { $_[0]->{_recent_info}; }
+sub ua {
+	$_[0]->{ua} = $_[1] if(@_ > 1);
+	$_[0]->{ua}
+}
 
 
 sub ip {
-	$_[0]->{_ip} = $_[1] if(@_ > 1);
-	$_[0]->{_ip}
+	$_[0]->{ip} = $_[1] if(@_ > 1);
+	$_[0]->{ip}
 }
+
+sub url {
+	$_[0]->{url} = $_[1] if(@_ > 1);
+	$_[0]->{url}
+}
+
+
+sub recent_info { $_[0]->{_recent_info}; }
 
 
 sub get_info {
@@ -63,25 +78,17 @@ sub get_info {
 
 	$self->ip($ip);
 
-	my $url       = $opt->{Guess} ? $RoughAPI : $GetAPI;
+	my $url       = $self->url;
 	my $response  = $self->ua->get($url . $ip);
 
 	return unless($response->is_success);
 
 	my $content = $response->content;
-	_convert_content(\$content) unless($opt->{Guess});
+
 	if($DEBUG){ warn $content; }
 
 	return $self->_set_info_to_obj($content);
 }
-
-
-sub guess {
-	my ($self, $ip) = @_;
-	$ip = $self->recent_info->ip if(@_ < 2 and $self->recent_info);
-	$self->get_info( $ip, {Guess => 1} );
-}
-
 
 
 ## PRIVATE METHOD
@@ -95,19 +102,12 @@ sub _check_ipaddr {
 }
 
 
-sub _convert_content { # make a content format same as /api/rough.html.
-	my $ref = $_[0];
-	$$ref =~ s{Country: (.+?)\s*\((\w\w)\)}{Country: $1\nCountry Code: $2}s;
-}
-
-
 sub _set_info_to_obj {
-	my ($self, $content) = @_;
-	my ($name, $code, $city, $lat, $lon, $guess) = (split/\n/,$content);
+	my ( $self, $content ) = @_;
+	my ( $country_code, $city, $lat, $lon ) = (split/\n/,$content);
+    my ( $name, $code ) = $country_code =~ /^Country: (.+?) \(([A-Z][A-Z])\)$/;
 	my $region;
 
-	($name) = $name =~ /^Country: (.+?)$/;
-	($code) = $code =~ /^Country Code: (\w\w)$/;
 	($lat)  = $lat =~ /^Latitude: (.+)$/;
 	($lon)  = $lon =~ /^Longitude: (.+)$/;
 	($city, $region) = $city =~ /^City: ([^,]+)(?:, (\w+))?$/;
@@ -131,7 +131,6 @@ sub _set_info_to_obj {
 		_private     => 0,
 		_un_city     => $unknown_city,
 		_un_country  => $unknown_country,
-		_guessed     => ($guess ? 1 : 0),
 	}, 'WWW::HostipInfo::Info';
 }
 
@@ -148,7 +147,6 @@ sub _get_info_as_null {
 		_private     => 0,
 		_un_city     => 1,
 		_un_country  => 1,
-		_guessed     => 0,
 	}, 'WWW::HostipInfo::Info';
 }
 
@@ -165,7 +163,6 @@ sub _get_info_as_private {
 		_private     => 1,
 		_un_city     => 1,
 		_un_country  => 1,
-		_guessed     => 0,
 	}, 'WWW::HostipInfo::Info';
 }
 
@@ -233,8 +230,7 @@ WWW::HostipInfo
  $info = $hostip->recent_info->country_name; # fetch most recent data
  
  print WWW::HostipInfo->new($ip)->get_info->city; # shortcut
- 
- $info = $hostip->guess($info->ip) if( $info->has_unknown_city );
+
 
 
 =head1 DESCRIPTION
@@ -245,38 +241,49 @@ via L<www.hostip.info> API.
 
 =head1 METHODS
 
-=over 4
+=head2 new
 
-=item new
+    $hostip = WWW::HostipInfo->new();
+    
+    $hostip = WWW::HostipInfo->new( $ip );
+    
+    $hostip = WWW::HostipInfo->new( { ip => $ip, url => $url, ua => $user_agent } );
 
 returns a WWW::HostipInfo object.
-This method can take ip address optionally.
+This method can take an ip address or a hash reference optionally.
 
+=head2 ip
 
-=item ip([$ip])
+    $ip = $hostip->ip([$ip]);
 
-setter / getter to ip address.
+setter / getter to the ip address.
 
+=head2 url
 
-=item get_info
+    $url = $hostip->url([$url]);
+
+setter / getter to the HostipInfo API.
+Default is C<api.hostip.info>.
+
+=head2 ua
+
+    $user_agent = $hostip->ua([$user_agent]);
+
+setter / getter to the user agent.
+Default is C<LWP::UserAgent>.
+
+=head2 get_info
+
+    $info = $hostip->get_info();
 
 returns a WWW::HostipInfo::Info object.
 If the method can't get a information, will return C<undef>.
 
+=head2 recent_info
 
-=item guess([$ip])
+    $info = $hostip->get_info();
 
-returns a WWW::HostipInfo object.
-If the original city is unknown, returns a guessed infomation.
-When the argument was not set, most recent data is used.
-
-
-=item recent_info
-
-returns a WWW::HostipInfo::Info object.
-
-=back
-
+returns a C<WWW::HostipInfo::Info> object.
 
 
 =head1 WWW::HostipInfo::Info
@@ -288,9 +295,7 @@ WWW::HostipInfo::Info object.
 
 getters for informations.
 
-
 =over 4
-
 
 =item country_code
 
@@ -300,7 +305,6 @@ If private ip address is used, the code is 'XX'.
 =item code
 
 an alias to country_code
-
 
 =item country_name
 
@@ -318,28 +322,19 @@ an alias to country_name
 
 return the city name as long as it is not unknown.
 
-
 =item region
 
 return state code if the coutnry is US.
 
-
 =item latitude
-
 
 =item longitude
 
-
 =item ip
-
 
 =item is_private
 
 If private ip address is used, returns true.
-
-=item is_guessed
-
-If the object has any guessed data, returns true.
 
 =item has_unknown_city
 
@@ -363,7 +358,7 @@ Makamaka Hannyaharamitu, E<lt>makamaka[at]cpan.orgE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2005 by Makamaka Hannyaharamitu
+Copyright 2005, 2009 by Makamaka Hannyaharamitu
 
 This library is licensed under GNU GENERAL PUBLIC LICENSE
 

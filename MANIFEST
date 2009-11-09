@@ -1,7 +1,6 @@
 MANIFEST
 README
 LICENSE
-Todo
 Changes
 Makefile.PL
 lib/WWW/HostipInfo.pm

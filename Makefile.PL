@@ -12,4 +12,5 @@ WriteMakefile(
                      'Test::More' => 0,
                      'LWP'        => 0,
                     },
+    ( $ExtUtils::MakeMaker::VERSION >= 6.3002 ? ('LICENSE' => 'gpl', ) : () ),
 );

@@ -1,5 +1,11 @@
 Revision history for Perl module WWW::HostipInfo
 
+0.10 Mon Nov  9 16:57:22 2009
+    - changed API url.
+    - remove guess() function.
+    - new() accepts a hash option.
+    - added url(), ua()
+
 0.08 Sun Oct 16 17:07:23 2005
     - added guess() function for unknown cities.
     - now don't use API when the ip address is private.
