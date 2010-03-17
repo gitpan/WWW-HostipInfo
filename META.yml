@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               WWW-HostipInfo
-version:            0.1
+version:            0.11
 abstract:           access to hostip.info API
 author:
     - Makamaka Hannyaharamitu (makamaka[at]cpan.org)
@@ -8,14 +8,18 @@ license:            gpl
 distribution_type:  module
 configure_requires:
     ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
 requires:
     LWP:         0
     Test::More:  0
+resources:
+    repository:  http://github.com/makamaka/WWW-HostipInfo
 no_index:
     directory:
         - t
         - inc
-generated_by:       ExtUtils::MakeMaker version 6.48
+generated_by:       ExtUtils::MakeMaker version 6.54
 meta-spec:
     url:      http://module-build.sourceforge.net/META-spec-v1.4.html
     version:  1.4
