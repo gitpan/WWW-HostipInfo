@@ -7,3 +7,4 @@ lib/WWW/HostipInfo.pm
 t/01-use.t
 t/02-private.t
 META.yml                                 Module meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)
